@@ -90,3 +90,44 @@ JOIN [Cities] AS c
 ON a.[CityId] = c.[Id]
 WHERE [Email] LIKE 'e%'
 ORDER BY c.[Name]
+
+--Task 6
+
+SELECT c.[Name] AS [City],
+       COUNT(h.[Name]) AS [Hotels]
+FROM [Cities] AS c
+JOIN [Hotels] AS h
+ON c.[Id] = h.[CityId]
+GROUP BY h.[CityId], c.[Name]
+ORDER BY [Hotels] DESC, [City]
+
+--Task 7 
+SELECT [AccountId],
+[FullName],
+MAX([Days]) AS [LongestTrip],
+MIN([Days]) AS [ShortestTrip]
+       FROM(
+SELECT a.[Id] AS [AccountId],
+       CONCAT(a.[FirstName], ' ', a.[LastName]) AS [FullName],
+       DATEDIFF(DAY, t.[ArrivalDate], t.[ReturnDate]) AS [Days]
+FROM [Accounts] AS a
+JOIN [AccountsTrips] AS ats
+ON a.[Id] = ats.[AccountId]
+JOIN [Trips] as t
+ON ats.TripId = t.Id
+WHERE a.[MiddleName] IS NULL AND t.[CancelDate] IS NULL) AS [DaysSubQuery]
+GROUP BY [FullName], [AccountId]
+ORDER BY [LongestTrip] DESC, [ShortestTrip] ASC
+
+--Task 8
+SELECT TOP (10) c.[Id],
+c.[Name] AS [City],
+c.[CountryCode] AS [Country],
+COUNT(a.[CityId]) AS [Accounts]
+FROM [Cities] AS c
+JOIN [Accounts] AS a
+ON c.[Id] = a.[CityId]
+GROUP BY c.[Name],
+           c.[Id],
+           c.[CountryCode]
+ORDER BY [Accounts] DESC
