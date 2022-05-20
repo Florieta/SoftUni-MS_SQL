@@ -131,3 +131,60 @@ GROUP BY c.[Name],
            c.[Id],
            c.[CountryCode]
 ORDER BY [Accounts] DESC
+
+--Task 9 
+SELECT a.[Id],
+           a.[Email],
+           c.[Name] AS [Town],
+           COUNT(c.[Name]) AS [Trips]
+      FROM [Accounts] a
+INNER JOIN [Cities] c
+        ON c.[Id] = a.[CityId]
+INNER JOIN [AccountsTrips] ats
+        ON ats.[AccountId] = a.[Id]
+INNER JOIN [Trips] t
+        ON t.[Id] = ats.[TripId]
+INNER JOIN [Rooms] r
+        ON r.[Id] = t.[RoomId]
+INNER JOIN [Hotels] h
+        ON h.[Id] = r.HotelId
+     WHERE a.[CityId] = h.[CityId]
+  GROUP BY a.[Id],
+           a.[Email],
+           c.[Name]
+  ORDER BY [Trips] DESC,
+           a.[Id]
+
+--Task 10
+
+WITH cte_AccountsToCity 
+AS
+(
+        SELECT ht.Id AS [HotelTownId],
+               c.Name AS [HotelTown]
+          FROM Cities c
+    INNER JOIN Hotels ht
+            ON ht.CityId = c.Id
+)
+
+    SELECT T.Id,
+           a.FirstName + ' ' + ISNULL(a.MiddleName + ' ', '') + a.LastName AS [FullName],
+           c.Name AS [From],
+           cte.HotelTown AS [To],
+           CASE
+               WHEN t.CancelDate IS NULL THEN CAST(DATEDIFF(DAY, T.ArrivalDate, T.ReturnDate) AS NVARCHAR) + ' days'
+               ELSE 'Canceled'
+           END AS [Duration]
+      FROM Trips t
+INNER JOIN AccountsTrips ats
+        ON ats.TripId = T.Id
+ LEFT JOIN Accounts a
+        ON a.Id = ats.AccountId
+ LEFT JOIN Cities c
+        ON c.Id = a.CityId
+ LEFT JOIN Rooms r
+        ON r.Id = T.RoomId
+ LEFT JOIN cte_AccountsToCity cte
+        ON cte.HotelTownId = r.HotelId
+  ORDER BY [FullName],
+           ats.TripId
