@@ -89,3 +89,14 @@ ON p.[Id] = pa.[PilotId]
 WHERE a.[FlightHours] IS NOT NULL AND (a.[FlightHours] BETWEEN 0 AND 304)
 ORDER BY a.[FlightHours] DESC, p.[FirstName]
 
+--Task 7
+
+SELECT TOP(20) fd.[Id] AS [DestinationId], fd.[Start], p.[FullName], a.[AirportName], fd.[TicketPrice] FROM [FlightDestinations] as fd
+LEFT JOIN [Passengers] as p
+ON fd.[PassengerId] = p.[Id]
+LEFT JOIN [Airports] AS a
+ON fd.[AirportId] = a.[Id]
+WHERE DAY([Start]) % 2 = 0
+ORDER BY [TicketPrice] DESC, [AirportName]
+
+
