@@ -102,3 +102,29 @@ LEFT JOIN [Categories] AS c
 ON r.[CategoryId] = c.[Id]
 GROUP BY r.[CategoryId], c.[Name]
 ORDER BY [ReportsNumber] DESC, c.[Name]
+
+--Task 8 
+
+SELECT [Username], 
+c.[Name] AS [CategoryName] 
+FROM [Reports] AS r
+JOIN [Users] AS u
+ON u.[Id] = r.[UserId]
+JOIN [Categories] AS c
+ON c.[Id] = r.[CategoryId]
+WHERE 
+DATEPART(MONTH, r.[OpenDate]) = 
+DATEPART(MONTH, u.[Birthdate])
+AND
+DATEPART(DAY, r.[OpenDate]) = 
+DATEPART(DAY, u.[Birthdate])
+ORDER BY [Username], c.[Name]
+
+--Task 9
+
+SELECT CONCAT(e.FirstName,' ', e.LastName) AS [Full Name], 
+COUNT(r.UserId) AS [UserCount] FROM Employees AS e
+LEFT JOIN Reports AS r
+ON e.Id = r.EmployeeId
+GROUP BY FirstName, LastName
+ORDER BY [UserCount] DESC, [Full Name] ASC
