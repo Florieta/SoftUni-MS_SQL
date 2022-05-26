@@ -38,9 +38,7 @@ WHERE LEN([Name]) IN (5,6)
 ORDER BY [Name]
 
 --6 Task
-SELECT [Name] FROM [Towns]
-WHERE LEFT([Name], 1) IN ('K', 'M', 'B', 'E')
-ORDER BY [Name]
+
 --WildCard
 
 SELECT * FROM [Towns]
@@ -48,8 +46,10 @@ WHERE [Name] LIKE '[mkbe]%'
 ORDER BY [Name]
 
 --Task 7 
-SELECT [TownID], [Name] FROM [Towns]
- WHERE [Name] NOT LIKE '[RBD]%'
+ SELECT [TownID],
+   	      [Name]
+	 FROM [Towns]
+	WHERE [Name] NOT LIKE '[RBD]%'
  ORDER BY [Name]
 
  --Task 8 
