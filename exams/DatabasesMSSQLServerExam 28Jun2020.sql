@@ -111,3 +111,73 @@ JOIN [Colonists] AS c
 ON tc.[ColonistId] = c.[Id]
 WHERE TC.[JobDuringJourney] = 'Pilot' AND DATEDIFF(YEAR,c.[BirthDate], '01/01/2019') < 30
 ORDER BY [Name]
+
+--Task 9 
+
+SELECT p.[Name], COUNT(*) AS [JourneysCount] 
+FROM [Planets] AS p
+JOIN [Spaceports] AS sp
+ON p.[Id] = sp.[PlanetId]
+JOIN [Journeys] AS j
+ON sp.[Id] = j.[DestinationSpaceportId]
+GROUP BY p.[Name]
+ORDER BY [JourneysCount] DESC, p.[Name]
+
+
+--Task 10
+
+SELECT 
+	* FROM 
+	(
+	SELECT
+	tc.[JobDuringJourney],
+	c.[FirstName] + ' ' + c.[LastName] AS [FullName],
+	DENSE_RANK() OVER(PARTITION BY [JobDuringJourney] ORDER BY c.[BirthDate]) AS [JobRank]
+	FROM [Colonists] c JOIN [TravelCards] tc ON tc.[ColonistId] = c.[Id]
+	) AS k
+	WHERE k.[JobRank] = 2
+
+--Task 11
+
+GO
+
+CREATE FUNCTION udf_GetColonistsCount(@PlanetName VARCHAR (30))
+RETURNS INT
+AS
+BEGIN
+
+	DECLARE 
+		@Result INT = (SELECT 
+						COUNT(*)
+						FROM [Planets] p
+						JOIN [Spaceports] sp ON sp.[PlanetId] = p.[Id]
+						JOIN [Journeys] j ON j.[DestinationSpaceportId] = sp.[Id]
+						JOIN [TravelCards] tc ON tc.[JourneyId] = j.[Id]
+						JOIN [Colonists] c ON c.[Id] = tc.[ColonistId]
+						WHERE p.[Name] = @PlanetName
+					  );
+
+	RETURN @Result;
+
+END
+
+GO
+
+--Task 12
+
+CREATE PROC usp_ChangeJourneyPurpose(@JourneyId INT, @NewPurpose VARCHAR(11))
+AS
+BEGIN
+
+	IF NOT EXISTS (SELECT * FROM [Journeys] WHERE [Id] = @JourneyId)
+		THROW 50001, 'The journey does not exist!', 1
+	
+	IF ((SELECT [Purpose] FROM [Journeys] WHERE [Id] = @JourneyId) = @NewPurpose)
+		THROW 50002, 'You cannot change the purpose!', 1
+	
+	UPDATE 
+		[Journeys]
+		SET [Purpose] = @NewPurpose
+		WHERE [Id] = @JourneyId
+
+END
