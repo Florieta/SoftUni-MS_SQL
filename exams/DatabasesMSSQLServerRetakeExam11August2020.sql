@@ -123,3 +123,82 @@ WHERE f.Id IS NULL
 ORDER BY c.[Id]
 
 --Task 8 
+
+SELECT [FirstName],
+       [Age],
+	   [PhoneNumber]
+FROM [Customers] AS c
+JOIN [Countries] AS co
+ON c.[CountryId] = co.[Id]
+WHERE c.[Age] >= 21 AND ([FirstName] LIKE '%an%' OR [PhoneNumber] LIKE '%38') AND  co.[Name] <> 'Greece'
+ORDER BY [FirstName], [Age] DESC
+
+--Task 9 
+
+SELECT  d.[Name] AS [DistributorName],
+i.[Name] AS [IngredientName],
+p.[Name] AS [ProductName],
+AVG(f.[Rate]) AS [AverageRate]
+FROM [Distributors] AS d
+LEFT JOIN [Ingredients] AS i ON i.[DistributorId] = d.[Id]
+LEFT JOIN [ProductsIngredients] AS pin ON pin.[IngredientId] = i.[Id]
+LEFT JOIN [Products] AS p ON p.[Id] = pin.[ProductId]
+LEFT JOIN [Feedbacks] AS f ON f.ProductId = p.Id
+GROUP BY d.[Name], i.[Name], p.[Name]
+HAVING AVG(f.[Rate]) BETWEEN 5 AND 8
+ORDER BY d.[Name], i.[Name], p.[Name]
+
+--Task 10
+SELECT 
+	k.CountryName, 
+	k.DistributorName
+	FROM(
+		SELECT
+		c.[Name] AS CountryName,
+		d.[Name] AS DistributorName,
+		COUNT(i.Id) AS [Counter],
+		DENSE_RANK() OVER (PARTITION BY c.[Name] ORDER BY COUNT(i.Id) DESC) AS [Rank]
+		FROM Distributors d 
+		LEFT JOIN Ingredients i ON i.DistributorId = d.Id 
+		JOIN Countries c ON c.Id = d.CountryId
+		GROUP BY c.[Name], d.[Name]
+		) AS k
+	WHERE k.[Rank] = 1
+	ORDER BY k.CountryName, k.DistributorName
+
+	--Task 11
+
+	GO
+
+CREATE VIEW v_UserWithCountries AS
+SELECT 
+	CONCAT([FirstName], ' ', [LastName]) AS [CustomerName], 
+	[Age],
+	[Gender],
+	CN.[Name]
+	FROM [Customers] ct
+	LEFT JOIN Countries cn ON cn.Id = ct.CountryId 
+
+GO
+
+--Task 12
+
+CREATE TRIGGER tr_DeleteAllProducts ON Products INSTEAD OF DELETE
+AS
+BEGIN
+
+	DECLARE @productId INT = (SELECT Id FROM deleted)
+
+	DELETE
+		FROM [Feedbacks]
+		WHERE [ProductId] = @productId
+
+	DELETE
+		FROM [ProductsIngredients] 
+		WHERE [ProductId] = @productId
+
+	DELETE
+		FROM [Products]
+		WHERE [Id] = @productId
+
+END

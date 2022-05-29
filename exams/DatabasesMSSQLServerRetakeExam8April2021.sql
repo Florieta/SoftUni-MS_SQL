@@ -128,3 +128,69 @@ LEFT JOIN Reports AS r
 ON e.Id = r.EmployeeId
 GROUP BY FirstName, LastName
 ORDER BY [UserCount] DESC, [Full Name] ASC
+
+--Task 10
+SELECT 
+ISNULL(e.[FirstName] + ' ' + e.[LastName], 'None') AS [Employee],
+ISNULL(d.[Name], 'None') AS [Department],
+ISNULL(c.[Name], 'None') AS [Category],
+r.[Description],
+FORMAT(r.[OpenDate], 'dd.MM.yyyy') AS [OpenDate],
+s.[Label] AS [Status],
+ISNULL(u.[Name], 'None') AS [User]
+FROM [Reports] AS r
+lEFT JOIN [Employees] AS e
+ON e.[Id] = r.[EmployeeId]
+LEFT JOIN [Categories] AS c
+ON c.[Id] = r.[CategoryId]
+LEFT JOIN [Departments] AS d
+ON d.[Id] = e.[DepartmentId]
+LEFT JOIN [Status] AS s
+ON s.[Id] = r.[StatusId]
+LEFT JOIN [Users] AS u
+ON u.[Id] = r.[UserId]
+ORDER BY 
+[FirstName] DESC, [LastName] DESC, d.[Name], c.[Name], 
+r.[Description], r.[OpenDate], s.[Label], u.[Name] 
+
+--11.	Hours to Complete
+GO
+
+CREATE FUNCTION udf_HoursToComplete
+(@StartDate DATETIME, @EndDate DATETIME)
+RETURNS INT
+AS 
+BEGIN
+IF (@StartDate IS NULL)
+RETURN 0;
+IF (@EndDate IS NULL)
+RETURN 0;
+RETURN DATEDIFF(HOUR, @StartDate, @EndDate)
+END
+
+--Task 12
+CREATE PROCEDURE usp_AssignEmployeeToReport
+(@EmployeeId INT, @ReportId INT)
+AS
+BEGIN
+
+DECLARE @EmployeeDepId INT =
+(SELECT [DepartmentId] 
+FROM [Employees]
+WHERE [Id] = @EmployeeId);
+
+DECLARE @ReportDepId INT = 
+(SELECT c.[DepartmentId]  
+FROM [Reports] AS r
+JOIN [Categories] AS c
+ON c.[Id] = r.[CategoryId]
+WHERE r.[Id] = @ReportId
+);
+
+IF (@EmployeeDepId <> @ReportDepId)
+THROW 50000, 'Employee doesn''t belong to the appropriate department!',1
+
+UPDATE [Reports] 
+SET [EmployeeId] = @EmployeeId
+WHERE [Id] = @ReportId
+END

@@ -200,7 +200,7 @@ ORDER BY [Country], [Highest Peak Name]
 
 --Task 18
 
-ELECT TOP(5)
+SELECT TOP(5)
     [CountryName] AS [Country],
 	ISNULL([Result].[PeakName], '(no highest peak)') AS [Highest Peak Name],
 	ISNULL([Result].[Elevation], 0) AS [Highest Peak Elevation],
