@@ -62,3 +62,107 @@ VALUES
 ('Typo fix in Judge.html', 'open', 4, 3),
 ('Implement documentation for UsersService.cs', 'closed', 8, 2),
 ('Unreachable code in Index.cs', 'open', 9, 8)
+
+--Task 3
+UPDATE [Issues]
+SET [IssueStatus] = 'closed'
+WHERE [AssigneeId] = 6
+
+--Task 4
+--SELECT * FROM [Repositories]
+--WHERE [Name] = 'Softuni-Teamwork'
+
+DELETE FROM [RepositoriesContributors]
+WHERE [RepositoryId] = 3
+
+DELETE FROM [Issues]
+WHERE [RepositoryId] = 3
+
+--Task 5
+SELECT [Id], [Message], [RepositoryId], [ContributorId] FROM [Commits]
+ORDER BY [Id], [Message], [RepositoryId], [ContributorId]
+
+--Task 6
+SELECT [Id], [Name], [Size] 
+FROM [Files]
+WHERE [Size] > 1000 AND [Name] LIKE '%html'
+ORDER BY [Size] DESC, [Id], [Name]
+
+
+--Task 7
+
+SELECT 
+i.[Id],
+CAST(CONCAT(u.[Username], ' : ', i.[Title]) AS VARCHAR(MAX)) AS [IssueAssignee]
+FROM [Issues] AS i
+JOIN [Users] AS u
+ON u.[Id] = i.[AssigneeId] 
+ORDER BY [Id] DESC, [IssueAssignee]
+
+--Task 8 
+
+SELECT 
+f.[Id], 
+f.[Name],
+CONCAT(f.[Size], 'KB') AS [Size]
+FROM [Files] AS f
+LEFT JOIN [Files] AS fl
+ON fl.[ParentId] = f.[Id]
+WHERE fl.[ParentId] IS NULL
+ORDER BY [Id], [Name], [Size] DESC
+
+--Task 9 
+
+SELECT TOP(5)
+r.[Id],
+r. [Name],
+COUNT(*) AS [Commits]
+FROM [RepositoriesContributors] AS rc
+JOIN [Repositories] AS r
+ON r.[Id] = rc.[RepositoryId]
+JOIN [Commits] AS c
+ON c.[RepositoryId] = r.[Id]
+GROUP BY r.[Id], r.[Name]
+ORDER BY [Commits] DESC, r.[Id], r.[Name]
+
+--Task 10
+
+SELECT 
+u.[UserName],
+AVG(f.[Size]) AS [Size]
+FROM [Commits] AS c
+JOIN [Users] AS u
+ON u.[Id] = c.[ContributorId]
+JOIN [Files] AS f
+ON f.[CommitId] = c.[Id]
+GROUP BY [Username]
+ORDER BY [Size] DESC, [Username]
+
+--Task 11
+GO
+
+CREATE FUNCTION udf_AllUserCommits(@username VARCHAR(MAX)) 
+RETURNS INT
+AS
+BEGIN
+	DECLARE @id INT = (SELECT [Id] FROM [Users] WHERE [Username] = @username)
+
+	DECLARE @result INT = (SELECT COUNT([Id]) FROM [Commits] WHERE [ContributorId] = @id)
+
+	RETURN @result
+END
+
+--Task 12
+
+GO
+
+CREATE PROCEDURE usp_SearchForFiles(@fileExtension VARCHAR(MAX))
+AS
+BEGIN
+	 SELECT
+	       [Id],
+		   [Name],
+		   CONCAT([Size], 'KB') AS [Size]
+	  FROM [Files]
+	 WHERE [Name] LIKE '%' + @fileExtension + '%'
+END
