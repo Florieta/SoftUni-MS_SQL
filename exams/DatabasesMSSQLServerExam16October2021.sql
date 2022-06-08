@@ -117,3 +117,44 @@ WHERE s.[Length] >= 12 AND (c.[CigarName] LIKE '%ci%' OR c.[PriceForSingleCigar]
 ORDER BY c.[CigarName], c.[PriceForSingleCigar] DESC
 
 --Task 9 
+SELECT 
+CONCAT([FirstName], ' ', [LastName]) AS [FullName],
+[Country],
+[ZIP],
+CONCAT('$', MAX(cg.[PriceForSingleCigar])) AS [CigarPrice]
+FROM [Clients] c
+JOIN [Addresses] a ON c.[AddressId] = a.[Id]
+JOIN [ClientsCigars] cc ON c.[Id] = cc.[ClientId]
+JOIN [Cigars] cg ON cc.[CigarId] = cg.[Id]
+WHERE a.[ZIP] NOT LIKE '%[^0123456789]%'
+GROUP BY [FirstName], [LastName], a.[Country], a.[ZIP]
+ORDER BY [FullName]
+
+--Task 10 
+
+SELECT 
+c.[LastName], 
+AVG(s.[Length]) AS [CiagrLength], CEILING(AVG(s.[RingRange])) AS [CiagrRingRange]
+FROM [Clients] c
+JOIN [ClientsCigars] cc ON c.[Id] = cc.[ClientId]
+JOIN [Cigars] cg ON cc.[CigarId] = cg.[id]
+JOIN [Sizes] s ON cg.[SizeId] = s.[Id]
+GROUP BY c.[LastName]
+ORDER BY [CiagrLength] DESC
+
+--Task 11
+
+GO
+
+CREATE FUNCTION udf_ClientWithCigars(@name NVARCHAR(30)) 
+RETURNS INT
+AS
+BEGIN
+DECLARE @id INT = (SELECT [Id] FROM [Clients] WHERE [FirstName] = @name)
+
+	DECLARE @result INT = (SELECT COUNT([CigarId]) FROM [ClientsCigars] WHERE [ClientId] = @id)
+
+	RETURN @result
+END
+
+--Task 12
