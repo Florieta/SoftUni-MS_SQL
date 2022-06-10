@@ -99,4 +99,38 @@ ON fd.[AirportId] = a.[Id]
 WHERE DAY([Start]) % 2 = 0
 ORDER BY [TicketPrice] DESC, [AirportName]
 
+--Task 8
+SELECT fd.[AircraftId],
+a.[Manufacturer],
+a.[FlightHours],
+COUNT(fd.[Id]) AS [FlightDestinationsCount],
+ROUND(AVG(fd.[TicketPrice]), 2) AS AvgPrice
+FROM [Aircraft] AS a
+JOIN [FlightDestinations] as fd
+ON a.[Id] = fd.[AircraftId]
+GROUP BY fd.[AircraftId], a.[Manufacturer], a.[FlightHours]
+HAVING COUNT(fd.[Id]) > 1
+ORDER BY [FlightDestinationsCount] DESC, fd.[AircraftId]
 
+--Task 9
+
+SELECT p.[FullName], COUNT(fd.[AircraftId]) AS [CountOfAircraft], SUM(fd.[TicketPrice]) AS [TotalPayed] FROM [Passengers] AS p
+JOIN [FlightDestinations] AS fd
+ON p.[Id] = fd.[PassengerId]
+JOIN [Aircraft] AS a
+ON a.[Id] = fd.[AircraftId]
+GROUP BY p.[FullName]
+HAVING p.[FullName] LIKE '_a%' AND COUNT(fd.[AircraftId]) > 1
+ORDER BY [FullName]
+
+--Task 10
+
+SELECT a.[AirportName], fd.[Start] AS [DayTime], fd.[TicketPrice], p.FullName, ai.[Manufacturer], ai.[Model] FROM [FlightDestinations] AS fd
+JOIN [Airports] AS a
+ON fd.AirportId = a.Id
+JOIN Passengers AS p
+ON p.[Id] = fd.[PassengerId]
+JOIN [Aircraft] AS ai
+ON ai.[Id] = fd.[AircraftId]
+WHERE DATEPART(hour, fd.[Start]) BETWEEN 6 AND 20 AND fd.[TicketPrice] > 2500
+ORDER BY ai.[Model] 
