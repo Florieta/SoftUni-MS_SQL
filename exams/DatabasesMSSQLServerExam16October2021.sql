@@ -158,3 +158,20 @@ DECLARE @id INT = (SELECT [Id] FROM [Clients] WHERE [FirstName] = @name)
 END
 
 --Task 12
+
+CREATE PROC usp_SearchByTaste(@taste VARCHAR(20))
+AS
+BEGIN
+SELECT c.[CigarName], 
+CONCAT('$', c.[PriceForSingleCigar]), 
+t.[TasteType], 
+b.[BrandName],
+CONCAT(s.[Length], ' cm') AS [CigarLength],
+CONCAT(s.[RingRange], ' cm') AS [CigarRingRange]
+FROM [Cigars] c
+JOIN [Sizes] s ON c.[SizeId] = s.[Id]
+JOIN [Tastes] t ON c.[TastId] = t.[Id]
+JOIN [Brands] b ON c.[BrandId] = b.[Id]
+WHERE t.[TasteType] = @taste
+ORDER BY [CigarLength], [CigarRingRange] DESC
+END

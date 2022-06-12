@@ -134,3 +134,46 @@ JOIN [Aircraft] AS ai
 ON ai.[Id] = fd.[AircraftId]
 WHERE DATEPART(hour, fd.[Start]) BETWEEN 6 AND 20 AND fd.[TicketPrice] > 2500
 ORDER BY ai.[Model] 
+
+--Task 11
+GO 
+
+CREATE FUNCTION udf_FlightDestinationsByEmail(@email VARCHAR(50))
+RETURNS INT
+AS
+BEGIN
+DECLARE @id INT = (SELECT [Id] FROM [Passengers] WHERE [Email] = @email)
+
+	DECLARE @result INT = (SELECT COUNT([Id]) FROM [FlightDestinations] WHERE [PassengerId] = @id)
+
+	RETURN @result
+END
+
+--Task 12
+GO
+
+CREATE PROC usp_SearchByAirportName(@airportName VARCHAR(70))
+AS
+BEGIN
+SELECT a.[AirportName], 
+	   p.[FullName],
+       (CASE 
+			WHEN fd.TicketPrice <= 400 THEN 'Low'
+			WHEN fd.TicketPrice <= 1500 THEN 'Medium'
+			ELSE 'High'
+		END) AS [LevelOfTicketPrice],
+		ac.[Manufacturer],
+		ac.[Condition],
+		at.[TypeName]
+FROM [Airports] AS a
+JOIN [FlightDestinations] AS fd
+ON a.[Id] = fd.[AirportId]
+JOIN [Passengers] AS p
+ON p.[Id] = fd.[PassengerId]
+JOIN [Aircraft] AS ac 
+ON ac.[Id] = fd.[AircraftId]
+JOIN [AircraftTypes] AS at
+ON ac.[TypeId] = at.[Id]
+WHERE a.[AirportName] = @airportName
+ORDER BY ac.[Manufacturer], p.[FullName]
+END
